@@ -5,8 +5,14 @@ import com.learning.entity.Employee;
 import com.learning.repository.EmployeeProjection;
 import com.learning.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,5 +39,19 @@ public class EmployeeService {
         }
         Employee saved = employeeRepository.save(employee);
         return saved.getName() + " onboarded successfully";
+    }
+
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    public List<Employee> getAllEmployeesInSorted(Boolean asc, String ...properties) {
+        Sort sort = Sort.by(asc ? Sort.Direction.ASC : Sort.Direction.DESC, properties);
+        return employeeRepository.findAll(sort);
+    }
+
+    public Page<Employee> getAllEmployeesInPagination(int  pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return employeeRepository.findAll(pageable);
     }
 }
