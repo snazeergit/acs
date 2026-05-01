@@ -7,34 +7,24 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Iterator;
-import java.util.List;
-
 @RestController
-@RequestMapping("v1/emp")
+@RequestMapping("api/v1/employees")
 @Tag(name = "Employees", description = "Operations related to employees")
 public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
 
-    @Operation(summary = "Welcome message", description = "Returns welcome message for employees")
-    @ApiResponses(
-            {
-                    @ApiResponse(responseCode = "200", description = "Welcome"),
-                    @ApiResponse(responseCode = "404", description = "Something went wrong")
-            }
-    )
-    @GetMapping("/welcome")
-    public String greetEmployee() {
-        return employeeService.greetEmployee();
-    }
 
     @Operation(summary = "Fetch employee by id", description = "Returns a employee based on the provided id")
     @ApiResponses(
@@ -43,51 +33,21 @@ public class EmployeeController {
                     @ApiResponse(responseCode = "404", description = "Employee not found")
             }
     )
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Employee> getEmployee(@Parameter(description = "Employee ID", required = true) @RequestParam Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getEmployee(@Parameter(description = "Employee ID", required = true) @PathVariable Long id) {
         Employee employee = employeeService.getEmployee(id);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
-    @Operation(summary = "Onboard a new employee", description = "Onboard a new employee with the provided details")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Employee onboarded successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid employee data")
-    })
-
-    @PostMapping("/onboard")
-    public ResponseEntity<String> onboardEmployee(@Parameter(description = "Employee details needed", required = true) @RequestBody Employee employee) {
+    @PostMapping
+    public ResponseEntity<String> onboardEmployee(@RequestBody Employee employee) {
         String resultMsg = employeeService.onboardEmployee(employee);
         return new ResponseEntity<>(resultMsg, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Fetch all employees", description = "Returns a list of employees")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Return all the employees")
-    })
-    @GetMapping("/get/all")
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        List<Employee> allEmployees = employeeService.getAllEmployees();
-        return new ResponseEntity<>(allEmployees, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Fetch all employees in sorted order", description = "Returns a list of employees in given sorted order based on the provided properties and sort direction")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Return all the employees in sorted order")
-    })
-    @GetMapping("/get/all/sorted")
-    public ResponseEntity<List<Employee>> getAllEmployeesInSorted(@Parameter(description = "Select true for ascending and false for descending", required = true) @RequestParam Boolean asc, @Parameter(description = "Provide a entity properties to sort ") @RequestParam String... properties) {
-        List<Employee> allEmployees = employeeService.getAllEmployeesInSorted(asc, properties);
-        return new ResponseEntity<>(allEmployees, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Fetch all employees using pagination", description = "Returns a list of employees using pagination based on the provided page number, page size")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Return all the employees per page")
-    })
-    @GetMapping("/get/all/paginated")
-    public ResponseEntity<Page<Employee>> getAllEmployeesInPagination(@Parameter(description = "Enter page number", required = true) @RequestParam int pageNo, @Parameter(description = "Enter page size ") @RequestParam int pageSize) {
-        Page<Employee> allEmployees = employeeService.getAllEmployeesInPagination(pageNo, pageSize);
+    @GetMapping
+    public ResponseEntity<Page<Employee>> getAllEmployeesInPagination(@ParameterObject @PageableDefault(page = 0, size = 5, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<Employee> allEmployees = employeeService.getAllEmployeesInPagination(pageable);
         return new ResponseEntity<>(allEmployees, HttpStatus.OK);
     }
 }

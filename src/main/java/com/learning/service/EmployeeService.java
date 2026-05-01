@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -18,13 +19,8 @@ import java.util.Optional;
 @Service
 public class EmployeeService {
 
-
     @Autowired
     private EmployeeRepository employeeRepository;
-
-    public String greetEmployee() {
-        return "Welcome to KR Consulting Services";
-    }
 
     public Employee getEmployee(Long id) {
         return employeeRepository.findById(id).orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
@@ -41,17 +37,7 @@ public class EmployeeService {
         return saved.getName() + " onboarded successfully";
     }
 
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
-    }
-
-    public List<Employee> getAllEmployeesInSorted(Boolean asc, String ...properties) {
-        Sort sort = Sort.by(asc ? Sort.Direction.ASC : Sort.Direction.DESC, properties);
-        return employeeRepository.findAll(sort);
-    }
-
-    public Page<Employee> getAllEmployeesInPagination(int  pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+    public Page<Employee> getAllEmployeesInPagination(Pageable pageable) {
         return employeeRepository.findAll(pageable);
     }
 }
